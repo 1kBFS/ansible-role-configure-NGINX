@@ -1,0 +1,19 @@
+---
+# defaults file for nginx_timer
+
+# Fields of service_state.json
+title_field: "Seems working"
+time_field: 0
+
+# Names of nginx, cron && jq packages to install
+nginx_package_name: "nginx"
+cron_package_name: "cron"
+jq_package_name: "jq"
+
+
+nginx_conf_template: nginx.j2
+nginx_conf_file_path: /etc/nginx/nginx.conf
+nginx_mime_file_path: /etc/nginx/mime.types
+nginx_pidfile: /run/nginx.pid
+nginx_user: "nginx"
+root_group: root

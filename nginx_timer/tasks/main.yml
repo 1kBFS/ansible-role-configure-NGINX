@@ -1,0 +1,70 @@
+---
+# tasks file for nginx_timer
+- name: Load OS-specific vars.
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - '{{ansible_distribution}}.yml'
+        - '{{ansible_os_family}}.yml'
+        - main.yml
+      paths:
+        - 'vars'
+- name: Import install repI need go to sleep =(o epel
+  ansible.builtin.yum:
+    name: epel-release
+    state: present
+  become: true
+  when: ansible_os_family == 'RedHat' 
+
+- name: Install the latest version of nginx, cron and jq.
+  become: true
+  ansible.builtin.package:
+    name:
+      - '{{ nginx_package_name }}'
+      - '{{ cron_package_name }}'
+      - '{{ jq_package_name }}'
+    state: latest
+
+- name: Start nginx, if not started.
+  become: true
+  ansible.builtin.service:
+    name: '{{ nginx_package_name }}'
+    state: started
+
+- name: Start cron, if not started.
+  ansible.builtin.service:
+    name: '{{ cron_service }}'
+    state: started
+
+- name: Replace nginx.conf.
+  ansible.builtin.template:
+    src: '{{ nginx_conf_template }}'
+    dest: '{{ nginx_conf_file_path }}'
+    group: "{{ root_group }}"
+  become: true
+  notify: restart nginx
+
+- name: Check if json-file exist.
+  ansible.builtin.stat:
+    path: /opt/service_state.json
+  register: file_exists
+
+- name: Check if json-file need update(title was replaced).
+  ansible.builtin.command: jq -r .title /opt/service_state.json
+  register: parsed_title
+  when: file_exists.stat.exists | bool
+  
+- name: Create json-file if not exists.
+  ansible.builtin.template:
+    src: service_state.j2
+    dest: /opt/service_state.json
+    mode: o=rw
+  when: (not file_exists.stat.exists or not (parsed_title.stdout == title_field)) | bool
+  become: true
+  notify: restart nginx
+
+- name: Create cron job.
+  ansible.builtin.cron:
+    name: "change uptime"
+    job: echo "$(jq ".uptime = $(($(ps -o etimes= -p $(cat /var/run/nginx.pid)) / 60))" /opt/service_state.json)" > /opt/service_state.json
