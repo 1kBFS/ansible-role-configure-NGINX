@@ -1,0 +1,9 @@
+---
+- hosts: virtual_machines
+  tasks:
+  - name: Include the role to setup nginx.
+    ansible.builtin.include_role:
+      name: nginx_timer
+    vars:
+      # title_field: "Your title here"
+    

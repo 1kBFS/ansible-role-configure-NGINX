@@ -1,0 +1,27 @@
+ubuntu:
+    hosts:
+        vm01:
+            ansible_host: 192.168.56.10
+            ansible_ssh_private_key_file: ./.vagrant/machines/node1/virtualbox/private_key
+    vars:
+        ansible_user: vagrant
+centos:
+    hosts:
+        vm02:
+            ansible_host: 192.168.56.11
+            ansible_ssh_private_key_file: ./.vagrant/machines/node2/virtualbox/private_key
+    vars:
+        ansible_user: vagrant
+arch:
+    hosts:
+        vm03:
+            ansible_host: 192.168.56.192
+            ansible_ssh_private_key_file: ./.vagrant/machines/node3/virtualbox/private_key
+    vars:
+        ansible_user: vagrant
+virtual_machines:
+    children:
+        ubuntu:
+        centos:
+        arch:
+    
